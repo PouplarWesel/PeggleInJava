@@ -9,16 +9,18 @@ public class Peggle extends PApplet{
     fullScreen();
   }
 
-  Editor editor = new Editor(this);
+  Editor editor;
 
   public void setup()
   {    
     frameRate(60);
     background(color(BACKGROUND));
+    editor = new Editor(this);
   }
 
   public void draw()
   {
+    background(color(BACKGROUND));
     editor.editorUse();
   }
 
