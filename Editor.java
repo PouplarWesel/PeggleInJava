@@ -15,6 +15,9 @@ public class Editor {
     public PImage pegCurvedGrey;
     public PImage pegCircle;
     public PImage pegCircleGrey;
+    public PImage background;
+    public String backgroundDir = "images/background_1.png";
+    public String currentPegType;
     public int width;
     public int height;
     public PApplet parent;
@@ -23,7 +26,7 @@ public class Editor {
     public float xSize = 25;
     public float ySize = 14;
     public int rotation = 0;
-    public String currentPegType;
+    public boolean pKeyPressed = true;
     public ArrayList<String> imagePathList = new ArrayList<>();
     public ArrayList<Integer> xPoints = new ArrayList<>();
     public ArrayList<Integer> yPoints = new ArrayList<>();
@@ -39,6 +42,7 @@ public class Editor {
     public ArrayList<Float> ySizeListUndo = new ArrayList<>();
     public ArrayList<String> imagePathListUndo = new ArrayList<>();
 
+
     public Editor(PApplet parent) {
         this.parent = parent;
         this.width = parent.width;
@@ -52,13 +56,10 @@ public class Editor {
         this.pegCurved = parent.loadImage("images/PegCurved.png");
         this.pegCurvedGrey = parent.loadImage("images/PegCurved.png");
         this.pegCurvedGrey.filter(parent.GRAY);
-
         currentPeg = pegBlock;
         currentPegGrey = pegBlockGrey;
         currentPegType = "images/PegBlock.png";
-
-
-
+        this.background = parent.loadImage(backgroundDir);
     }
 
     public void editorUse(){
@@ -73,6 +74,8 @@ public class Editor {
     }
 
     public void display(){
+        parent.image(background, 0, 0, parent.width, parent.height);
+
         for (int x = 0; x < xPoints.size(); x++){
             parent.pushMatrix();
             parent.translate(xPoints.get(x), yPoints.get(x));
@@ -154,10 +157,12 @@ public class Editor {
     }
 
     public void rotate(){
-        if (parent.keyPressed && parent.key == 'r') {
+        if (parent.keyPressed && parent.key == 'e') {
             rotation += 1;
+        } else if (parent.keyPressed && parent.key == 'q') {
+            rotation -= 1;
         }
-        if (rotation >= 360) {
+        if (rotation >= 360 || rotation <= -360) {
             rotation = 0;
         }
     }
@@ -179,11 +184,11 @@ public class Editor {
             ySize = 25;
             currentPegType = "images/PegBall.png";
         }
-        if (parent.keyPressed && parent.key == 'u') {
+        if (parent.keyPressed && parent.key == 'v') {
             currentPeg = pegCurved;
             currentPegGrey = pegCurvedGrey;
-            xSize = 23 * 2;
-            ySize = 13 * 2;
+            xSize = 23;
+            ySize = 13;
             currentPegType = "images/PegCurved.png";
         }
     }
@@ -196,7 +201,7 @@ public class Editor {
             xSize *= 0.9f;
             ySize *= 0.9f;
         }
-        if (parent.keyPressed && parent.key == 'x') {
+        if (parent.keyPressed && parent.key == 'r') {
             rotation =0;
             if (currentPeg == pegBlock) {
                 xSize = 25;
@@ -207,15 +212,15 @@ public class Editor {
                 ySize = 25;
             }
             if (currentPeg == pegCurved) {
-                xSize = 23 * 2;
-                ySize = 13 * 2;
+                xSize = 23;
+                ySize = 13;
             }
         }
     }
     public void save() {
-        if (parent.keyPressed && parent.key == 'p') {
+        if (pKeyPressed && parent.key == 'p' && parent.keyPressed) {
             JSONArray pegsArray = getObjects();
-            String filename = "level/pegs.json";
+            String filename = "level/level_1.json";
             int counter = 1;
             while (new File(filename).exists()) {
                 filename = "level/level_" + counter + ".json";
@@ -224,10 +229,10 @@ public class Editor {
             try (FileWriter file = new FileWriter(filename)) {
                 file.write(pegsArray.toString());
                 System.out.println("Successfully Copied JSON Object to File...");
-                System.out.println("\nJSON Object: " + pegsArray);
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            pKeyPressed = false;
         }
     }
 
@@ -243,7 +248,22 @@ public class Editor {
             pegObject.put("imagePath", imagePathList.get(i));
             pegsArray.put(pegObject);
         }
+
+        // Add screen size
+        JSONObject screenSize = new JSONObject();
+        screenSize.put("width", parent.width);
+        screenSize.put("height", parent.height);
+        pegsArray.put(screenSize);
+
+        // Add background image
+        JSONObject backgroundObject = new JSONObject();
+        backgroundObject.put("backgroundImage", backgroundDir);
+        pegsArray.put(backgroundObject);
+
         return pegsArray;
     }
+
+
+
 }
 
